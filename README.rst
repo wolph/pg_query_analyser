@@ -13,6 +13,8 @@ parser while PgFouine chokes long before that.
 Install
 -------
 
+::
+
     qmake
     make
 
