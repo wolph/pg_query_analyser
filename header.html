@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>PG Query Analyser: PostgreSQL log analysis report</title>
+  <style type="text/css">
+/*<![CDATA[*/
+
+  /* common.css */
+  body { background-color: #FFFFFF; }
+  * { font-family: Verdana, Arial, Helvetica; }
+  div, p, th, td { font-size:12px; }
+  a {color:rgb(180, 80, 80);text-decoration:underline}
+  a:hover {color:rgb(180, 80, 80);text-decoration:none}
+  h1 { font-size:16px; color:#FFFFFF; font-weight:normal; padding:6px; background-color:rgb(180, 80, 80); margin-bottom:0px; }
+  h2 { margin-top:15px; margin-bottom:10px; font-weight:normal; font-size:14px; padding:2px 10px 2px 0px; border-bottom:1px solid #7B8CBE; color:#7B8CBE; }
+  h2 a, h2 a:hover { color:black; text-decoration:none; }
+  h3 { color:#FFB462; border-bottom:1px solid #FFB462; font-weight:bold; font-size:12px; margin-bottom:10px; padding-bottom:2px; }
+  div.menu { background-color:rgb(220,230,252); padding:4px; margin-bottom:20px; }
+  div.menu a { padding-right:3px; padding-left:3px; color:black; text-decoration:none; }
+  div.menu a:hover { padding-right:3px; padding-left:3px; padding-top:2px; padding-bottom:2px; text-decoration:none; background-color:rgb(180, 80, 80); color:white; }
+  div.information { border:1px solid #FFB462;     padding:10px; margin-top:5px; background-color:#FEE3C4; }
+  .tip { background-color:#EBF0FC; padding:6px; margin:5px; }
+  ul { padding-left: 14px; padding-top: 0px; padding-bottom: 0px; margin-bottom: 0px; margin-top: 0px; }
+  ul li { list-style-type: square; }
+  div.reports { padding:4px; }
+  table.queryList td, table.queryList th { padding: 2px; }
+  table.queryList th { background-color: #DDDDDD; border:1px solid #CCCCCC; display: table-cell; width: 10px;}
+  table.queryList th.left { text-align:left !important;}
+  table.queryList tr.row0 td { background-color: #FFFFFF; border: 1px solid #EEEEEE; }
+  table.queryList tr.row1 td { background-color: #EEEEEE; border: 1px solid #EEEEEE; }
+  table.queryList td.top { vertical-align:top; }
+  table.queryList td.right { text-align:right; }
+  table.queryList td.center { text-align:center; }
+  table.queryList td.relevantInformation { font-weight:bold; }
+  table.queryList div.examples { background-color:#EBF0FC; border:1px solid #FFFFFF; padding:6px; margin:5px; }
+  table.queryList div.examples div.example0 { padding:2px; }
+  table.queryList div.examples div.example1 { background-color:#FFFFFF; padding:2px; border:1px solid #EBF0FC; }
+  .normal { color: green; font-weight:bold; }
+  .warning { color: orange; font-weight:bold; }
+  .fatal { color: red; font-weight:bold; font-style:italic; }
+  div.tooltipLink { position:relative; cursor:pointer; }
+  div.tooltipLink span.information { border-bottom:1px dotted gray; z-index:10; }
+  div.tooltipLink div.tooltip { display:none; background-color:#EBF0FC; border:1px solid #FFFFFF; padding:6px; width:250px; }
+  div.tooltipLink div.tooltip table { background-color:white; width:250px; }
+  div.tooltipLink div.tooltip table tr.row0 td { background-color: #FFFFFF; border: 1px solid #EEEEEE; }
+  div.tooltipLink div.tooltip table tr.row1 td { background-color: #EEEEEE; border: 1px solid #EEEEEE; }
+  div.tooltipLink div.tooltip th { font-size:10px; }
+  div.tooltipLink div.tooltip td { font-size:9px; font-weight:normal; padding:1px; }
+  div.tooltipLink:hover div.tooltip { display:block; z-index:20; position:absolute; top:1.5em; left:2em; }
+  table.queryList div.queryNotice { color: #8D8D8D; font-style:italic; }
+  table.queryList div.error { color: #D53131; font-weight:bold; }
+  table.queryList div.errorInformation { color: #8D8D8D; font-style:italic; }
+  table.queryList input { border:1px solid black; background-color:#FFFFFF; padding:1px; font-size:11px; }
+  table.sortable a.sortheader { color: black; text-decoration: none; }
+  table.sortable a.sortheader:hover { color: rgb(180, 80, 80); }
+  table.sortable span.sortarrow { color: black; text-decoration: none; font-weight:bold; }
+  .indexInformation { background-color:#EBF0FC; padding-left:20px; padding-right:20px; padding-top:10px; padding-bottom:10px; margin:5px; }
+  .indexInformation table.queryList { margin-top:10px; }
+  div.footer { font-size:12px; margin-top:30px; margin-bottom:400px; background-color:rgb(180, 80, 80); padding:5px; text-align:right; color:white; }
+  div.footer a, div.footer a:hover { color:white; text-decoration:underline; }
+
+  html>body div#littleToc { display:block; background-color:white; color:black; position:fixed; bottom:10px; right:10px; width:160px; font-size:11px; text-align:left; border:1px dotted #BBBBBB; }
+  /* div#littleToc div#littleTocContent { display:none; padding:2px; }*/
+  div#littleToc { width:205px; }
+  div#littleToc div#littleTocContent { display:block; border-right:5px solid #BBBBBB; }
+
+  div#littleToc div#littleTocTitle { font-weight:bold; text-align:center;padding:2px; }
+  div#littleToc div#littleTocTitle { display:none; }
+
+  div#littleToc ul { padding:0px; text-indent:0px; margin:0px; }
+  div#littleToc li { font-size:11px; list-style-type:none; padding:0px; text-indent:0px; margin:0px; }
+
+  div#littleToc a { color:#000000; padding:2px; margin:2px; display:block; text-decoration:none; border:1px solid #CCCCCC; }
+  div#littleToc a:hover { text-decoration:none; background-color:#DDDDDD; }
+
+  .sql  {font-family:monospace;}
+  .sql .imp {font-weight: bold; color: red;}
+  .sql .kw1 {color: #993333; font-weight: bold;}
+  .sql .co1 {color: #808080; font-style: italic;}
+  .sql .co2 {color: #808080; font-style: italic;}
+  .sql .coMULTI {color: #808080; font-style: italic;}
+  .sql .es0 {color: #000099; font-weight: bold;}
+  .sql .br0 {color: #66cc66;}
+  .sql .sy0 {color: #66cc66;}
+  .sql .st0 {color: #ff0000;}
+  .sql .nu0 {color: #cc66cc;}
+  .sql span.xtra { display:block; }
+
+  div.c1 {display:none;}
+  /*]]>*/
+  </style>
+  <script type="text/javascript">
+   /* <![CDATA[ */
+    function toggleExamples(caller, n) {
+        var o = document.getElementById("example_" + n);
+        if(o){
+            if(o.style.display == 'none'){
+                o.style.display = 'block';
+                caller.value = caller.value.replace('Show', 'Hide');
+            }else{
+                o.style.display = 'none';
+                caller.value = caller.value.replace('Hide', 'Show');
+            }
+        }
+    }
+    /* ]]> */
+  </script>
+</head>
+
+<body>
+  <div id="content">
+    <h1 id="top">PG Query Analyser: PostgreSQL log analysis report</h1>
+
+    <div class="menu">
+      <a href="#NormalizedQueriesMostTimeReport">Queries that took up the most time (N)</a> |
+      <a href="#NormalizedQueriesMostFrequentReport">Most frequent queries (N)</a> |
+      <a href="#NormalizedQueriesSlowestAverageReport">Slowest queries (N)</a>
+    </div>
+
+    <p>Normalized reports are marked with a "(N)".</p>

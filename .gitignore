@@ -1,0 +1,4 @@
+*.o
+pg_query_analyser
+debug
+.bzr*
