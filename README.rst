@@ -13,7 +13,6 @@ parser while PgFouine chokes long before that.
 Install
 -------
 
-..
     qmake
     make
 
@@ -22,18 +21,24 @@ Usage
 
 From stdin:
 
-..
+::
+
     cat /var/log/postgresql/postgresql.log | head -n 100000 | ./pg_query_analyser --from_stdin=true
+
 
 From file:
 
-..
+::
+
     ./pg_query_analyser --input_file=/var/log/postgresql/postgresql.log
+
+
 
 Help
 ----
 
-..
+::
+
     # ./pg_query_analyser --help                                                                                                                                                                                                                                                           /home/rick/pg_query_analyser
     Usage: ./pg_query_analyser [flags]
     Options: 
