@@ -5,7 +5,9 @@
 #include <QVariant>
 #include <QFile>
 #include <QStringList>
-#include <arg.h>
+#include <QTextStream>
+#include <QRegExp>
+#include "arg.h"
 
 class Args : public QHash<QString, QVariant>{
 private:
@@ -17,6 +19,7 @@ public:
     void add(Arg *arg);
 
     QString getString(QString key);
+    int getFile(QFile *filePtr, QString key, QFlags<QIODevice::OpenModeFlag> flags);
     QStringList getStringList(QString key, QString separator=",");
     int getInt(QString key);
     bool getBool(QString key);

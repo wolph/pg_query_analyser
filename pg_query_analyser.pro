@@ -12,7 +12,8 @@ SOURCES += main.cpp \
     arg.cpp \
     args.cpp \
     queries.cpp
-HEADERS += query.h \
+HEADERS += \
+    query.h \
     main.h \
     args.h \
     arg.h \

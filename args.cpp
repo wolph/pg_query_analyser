@@ -1,13 +1,17 @@
-#include <QTextStream>
-#include <QRegExp>
 #include "args.h"
 
 bool Args::parse(int argc, char **argv){
-    QTextStream cerr(stderr, QIODevice::WriteOnly);
+    /* Simple class to parse some commandline arguments */
+
+    QTextStream qerr(stderr, QIODevice::WriteOnly);
+    /* to accept parameters like --foo-bar=spam-eggs */
     QRegExp key_value_re("--([^=]+)=(.*)");
+    /* to accept parameters like --foo-bar */
     QRegExp key_re("--([^=]+)");
     QString tmp;
     QHash<QString, QString> args;
+    /* Using argc/argv so all parameters work, not just the ones not filtered
+     out by Qt */
     program = QString(argv[0]);
 
     for(int i=1; i<argc; i++){
@@ -43,7 +47,7 @@ bool Args::parse(int argc, char **argv){
         if(args.contains(arg.getName())){
             insert(arg.getName(), arg.callback(args.value(arg.getName())));
         }else if(arg.getRequired()){
-            cerr << "Argument '" << i.key() << "' is required and not given." << endl;
+            qerr << "Argument '" << i.key() << "' is required and not given." << endl;
             return false;
         }else{
             insert(arg.getName(), arg.getDefault());
@@ -76,23 +80,55 @@ bool Args::getBool(QString key){
     return value(key).toBool();
 }
 
+int Args::getFile(QFile *filePtr, QString key, QFlags<QIODevice::OpenModeFlag> flags){
+    QString filename = getString(key);
+    QFile file(filePtr);
+    QTextStream qerr(stderr, QIODevice::WriteOnly);
+
+    if(filename == "-"){
+        if(flags & QIODevice::ReadOnly){
+            qerr << "Reading from stdin" << endl;
+            
+            if(!file.open(stdin, flags)){
+                qerr << "Unable to read stdin, exiting" << endl;
+                return -2;
+            }
+        }else{
+            qerr << "Writing to stdout" << endl;
+            
+            if(!file.open(stdout, flags)){
+                qerr << "Unable to write to stdout, exiting" << endl;
+                return -3;
+            }
+        }        
+    }else{
+        qerr << "Opening " << filename << endl;
+
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+            qerr << "Unable to open '" << filename << "' exiting" << endl;
+            return -4;
+        }
+    }
+    return 0;
+}
+
 void Args::help(){
-    QTextStream cerr(stderr, QIODevice::WriteOnly);
-    cerr << "Usage: " << program << " [flags]" << endl;
-    cerr << "Options: " << endl;
+    QTextStream qerr(stderr, QIODevice::WriteOnly);
+    qerr << "Usage: " << program << " [flags]" << endl;
+    qerr << "Options: " << endl;
 
     QHashIterator<QString, Arg*> i(this->args);
     while(i.hasNext()){
         i.next();
-        cerr << QString("%1").arg("--" + i.key(), 20);
+        qerr << QString("%1").arg("--" + i.key(), 20);
         if(i.value()->getRequired()){
-            cerr << QString("=<%1>").arg(i.key().toUpper(), -30);
+            qerr << QString("=<%1>").arg(i.key().toUpper(), -30);
         }else{
-            cerr << QString("=%1").arg(i.value()->getDefault().toString(), -30);
+            qerr << QString("=%1").arg(i.value()->getDefault().toString(), -30);
         }
         if(i.value()->getHelp().length()){
-            cerr << " -- " << i.value()->getHelp();
+            qerr << " -- " << i.value()->getHelp();
         }
-        cerr << endl;
+        qerr << endl;
     }
 }

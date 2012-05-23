@@ -5,14 +5,18 @@
 #include <QVariant>
 #include <QBool>
 #include <QString>
+#include <QFileInfo>
 
 class Arg : public QObject{
 public:
     Arg(const char *name, QVariant(*callback)(QString), QVariant default_, QString help="");
     Arg(const char *name, QVariant(*callback)(QString), QString help="");
+    Arg(const char *shortname, const char *name, QVariant(*callback)(QString), QVariant default_, QString help="");
+    Arg(const char *shortname, const char *name, QVariant(*callback)(QString), QString help="");
     Arg(const Arg &arg);
 
     QString getName() const {return _name;}
+    QString getShortname() const {return _shortname;}
 
     void setCallback(QVariant(*callback)(QString)){_callback = callback;}
     QVariant callback(QString parameter){return _callback(parameter);}
@@ -36,6 +40,7 @@ public:
 
 private:
     QString _name;
+    QString _shortname;
     QVariant(*_callback)(QString);
     QVariant _default;
     QString _help;

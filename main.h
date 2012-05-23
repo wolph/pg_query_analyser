@@ -8,10 +8,10 @@
 #include <QMap>
 #include <QDateTime>
 #include <QTime>
-#include <query.h>
-#include <args.h>
-#include <arg.h>
-#include <queries.h>
+#include "query.h"
+#include "args.h"
+#include "arg.h"
+#include "queries.h"
 
 int min(int a, int b);
 

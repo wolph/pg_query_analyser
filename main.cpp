@@ -1,8 +1,4 @@
-#include <main.h>
-
-QTextStream cout(stdout, QIODevice::WriteOnly);
-QTextStream cerr(stderr, QIODevice::WriteOnly);
-QTextStream cin(stdin, QIODevice::ReadOnly);
+#include "main.h"
 
 int min(int a, int b){
     return a < b ? a : b;
@@ -62,16 +58,21 @@ QString print_queries(QList<Query*> queries, int top){
     return output_string;
 }
 
+
+
 int main(int argc, char **argv){
+    QTextStream qout(stdout, QIODevice::WriteOnly);
+    QTextStream qerr(stderr, QIODevice::WriteOnly);
+    QTextStream qin(stdin, QIODevice::ReadOnly);
+
     Args args;
-    args.add(new Arg("verbose", Arg::setTrue, QVariant(false)));
-    args.add(new Arg("from_stdin", Arg::setTrue, QVariant(false)));
-    args.add(new Arg("input_file", Arg::readableFile, QVariant("/var/log/postgresql/postgresql-8.4-main.log")));
-    //args.add(new Arg("input_file", Arg::readableFile, QVariant("/var/log/postgresql/test.log")));
-    args.add(new Arg("output_file", Arg::writableFile, QVariant("/usr/local/www/phpPgAdmin/report.html")));
-    args.add(new Arg("users", Arg::toString, QVariant()));
-    args.add(new Arg("databases", Arg::toString, QVariant()));
+    args.add(new Arg("v", "verbose", Arg::setTrue, QVariant(false)));
+    args.add(new Arg("i", "input-file", Arg::readableFile, QVariant("/var/log/postgresql.log")));
+    args.add(new Arg("o", "output-file", Arg::writableFile, QVariant("report.html")));
+    args.add(new Arg("u", "users", Arg::toString, QVariant()));
+    args.add(new Arg("d", "databases", Arg::toString, QVariant()));
     args.add(new Arg("top", Arg::toInt, QVariant(20)));
+    args.add(new Arg("t", "query-types", Arg::toString, QVariant("SELECT,UPDATE,INSERT,DELETE")));
 
     if(!args.parse(argc, argv)){
         args.help();
@@ -80,6 +81,9 @@ int main(int argc, char **argv){
 
     QStringList users = args.getStringList("users");
     QStringList databases = args.getStringList("databases");
+    QStringList query_types = args.getStringList("query-types");
+
+    int ret;
 
     QString line;
     int start_index;
@@ -93,34 +97,16 @@ int main(int argc, char **argv){
     QString user;
     QString statement;
     uint duration;
-    QFile input_file(args.getString("input_file"));
+    QFile input_file;
+    ret = args.getFile(&input_file, "input-file", QIODevice::ReadOnly | QIODevice::Text);
+    if(ret)return ret;
+    QFile output_file;
+    ret = args.getFile(&output_file, "output-file", QIODevice::WriteOnly | QIODevice::Text);
+    if(ret)return ret;
+    QTextStream output(&output_file);
 
     /* display the top N queries */
     int top = args.getInt("top");
-
-    if(args.getBool("from_stdin")){
-        cout << "Reading from stdin" << endl;
-        
-        if (!input_file.open(stdin, QIODevice::ReadOnly | QIODevice::Text)){
-            cerr << "Unable to read file, exiting" << endl;
-            return -2;
-        }
-        
-    }else{
-        cout << "Opening " << args.getString("input_file") << endl;
-
-        if (!input_file.open(QIODevice::ReadOnly | QIODevice::Text)){
-            cerr << "Unable to read file, exiting" << endl;
-            return -2;
-        }
-    }
-
-    QFile output_file(args.getString("output_file"));
-    if (!output_file.open(QIODevice::WriteOnly | QIODevice::Text)){
-        cerr << "Unable to open output file " << args.getString("output_file") << endl;
-        return -3;
-    }
-    QTextStream output(&output_file);
 
     Queries queries;
     old_query_id = -1;
@@ -136,11 +122,10 @@ int main(int argc, char **argv){
         line = input_file.readLine(4096);
         lines++;
         if(lines % 1000 == 0){
-            cout << "Read " << lines << " lines." << endl;
-            cout.flush();
+            qout << "Read " << lines << " lines." << endl;
+            qout.flush();
         }
 
-        // Oct 15 13:00:04 db1 postgres[91094]: [123-1] user=pytm_alchemy,db=pytm LOG:  unexpected EOF on client connection
         if(line[0] == '\t'){
             statement.append(line);
             continue;
@@ -163,12 +148,10 @@ int main(int argc, char **argv){
             statement.replace("<", "&lt;");
             QString hashStatement = Query::normalize(statement);
             statement = Query::format(statement);
-            //if((
-            //        hashStatement.startsWith("INSERT") ||
-            //        hashStatement.startsWith("DELETE") ||
-            //        hashStatement.startsWith("UPDATE")
-            //    )
             if((
+                    hashStatement.startsWith("INSERT") ||
+                    hashStatement.startsWith("DELETE") ||
+                    hashStatement.startsWith("UPDATE") ||
                     hashStatement.startsWith("SELECT")
                 )
                     && (!users.length() || users.contains(user))
@@ -216,7 +199,7 @@ int main(int argc, char **argv){
 
     QFile header("header.html");
     if (!header.open(QIODevice::ReadOnly | QIODevice::Text)){
-        cerr << "Unable to open header.html" << endl;
+        qout << "Unable to open header.html" << endl;
         return -4;
     }else{
         output << header.readAll();
@@ -248,11 +231,11 @@ int main(int argc, char **argv){
 
     QFile footer("footer.html");
     if (!footer.open(QIODevice::ReadOnly | QIODevice::Text)){
-        cerr << "Unable to open footer.html" << endl;
+        qout << "Unable to open footer.html" << endl;
         return -5;
     }else{
         output << footer.readAll();
         footer.close();
     }
-    cerr << "Wrote to file " << args.getString("output_file") << endl;
+    qout << "Wrote to file " << args.getString("output_file") << endl;
 }
