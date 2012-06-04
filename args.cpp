@@ -2,62 +2,122 @@
 
 bool Args::parse(int argc, char **argv){
     /* Simple class to parse some commandline arguments */
-
     QTextStream qerr(stderr, QIODevice::WriteOnly);
+    QHash<QString, QString> args;
+
+    /* to accept parameters like -f=spam-eggs */
+    QRegExp short_key_value_re("-([^=])=(.+)");
+    /* to accept parameters like -f */
+    QRegExp short_key_re("-([^=]+)");
     /* to accept parameters like --foo-bar=spam-eggs */
-    QRegExp key_value_re("--([^=]+)=(.*)");
+    QRegExp key_value_re("--([^=]+)=(.+)");
     /* to accept parameters like --foo-bar */
     QRegExp key_re("--([^=]+)");
-    QString tmp;
-    QHash<QString, QString> args;
+    /* to accept values for space separated parameters */
+    QRegExp value_re("([^-]+.*|.)");
+
     /* Using argc/argv so all parameters work, not just the ones not filtered
      out by Qt */
     program = QString(argv[0]);
 
     for(int i=1; i<argc; i++){
-        tmp = QString(argv[i]);
+        int j;
+
+        QString key;
+        QString value;
+        QString tmp = QString(argv[i]);
+
+        if(short_key_value_re.exactMatch(tmp)){
+            key = short_key_value_re.cap(1);
+            value = short_key_value_re.cap(2);
+            if(key.length() > 1){
+                qerr << "Can't have multiple short arguments with values." \
+                    << endl;
+                qerr << "Did you forget a '-'? Try --" << key << "=" \
+                    << value << " instead" << endl;
+                return false;
+            }
+        }else if(short_key_re.exactMatch(tmp)){
+            key = short_key_re.cap(1);
+            if(short_key_re.cap(1).length() != 1){
+                j = short_key_re.cap(1).length();
+                while(j--){
+                    args.insert(QString(key[j]), value);
+                }
+                continue;
+            }
+        }else if(key_value_re.exactMatch(tmp)){
+            key = key_value_re.cap(1);
+            value = key_value_re.cap(2);
+
+        }else if(key_re.exactMatch(tmp)){
+            key = key_re.cap(1);
+        }
+
         /* Called help, exiting to display help */
-        if(tmp == "-h"){
+        if(tmp == "help"){
             return false;
         }
 
-        if(key_value_re.exactMatch(tmp)){
-            args.insert(key_value_re.cap(1), key_value_re.cap(2));
-        }else if(key_re.exactMatch(tmp)){
-            tmp = key_re.cap(1);
-
-            /* Called help, exiting to display help */
-            if(tmp == "help"){
-                return false;
-            }
-
-            if(i + 1 == argc || key_re.exactMatch(QString(argv[i+1])) || key_value_re.exactMatch(QString(argv[i+1]))){
-                args.insert(tmp, "");
-            }else{
-                args.insert(tmp, argv[i+1]);
+        if(i+1 < argc){
+            tmp = QString(argv[i+1]);
+            if(value == NULL && value_re.exactMatch(tmp)){
                 i++;
+                value = value_re.cap(1);
             }
         }
+        args.insert(key, value);
     }
 
-    QHashIterator<QString, Arg*> i(this->args);
-    while(i.hasNext()){
-        i.next();
-        Arg arg = *i.value();
+    QHashIterator<QString, Arg*> j(this->args);
+    while(j.hasNext()){
+        j.next();
+        Arg arg = *j.value();
+
+        /* Called help, exiting to display help */
+        if(arg.getName() == "help"){
+            return false;
+        }
+
         if(args.contains(arg.getName())){
-            insert(arg.getName(), arg.callback(args.value(arg.getName())));
+            insert(arg.getName(), arg.callback(args.take(arg.getName())));
+        }else if(args.contains(arg.getShortname())){
+            insert(arg.getName(),
+                arg.callback(args.take(arg.getShortname())));
         }else if(arg.getRequired()){
-            qerr << "Argument '" << i.key() << "' is required and not given." << endl;
+            qerr << "Argument '" << j.key() \
+                << "' is required and not given." << endl;
             return false;
         }else{
             insert(arg.getName(), arg.getDefault());
         }
+    }
+
+    if(!args.empty()){
+        qerr << "The following unsupported arguments were found:" << endl;
+        QHashIterator<QString, QString> j(args);
+        while(j.hasNext()){
+            j.next();
+            if(j.key().length() == 1){
+                qerr << "\t-";
+            }else{
+                qerr << "\t--";
+            }
+            qerr << j.key();
+            if(j.value() != ""){
+                qerr << " with value: " << j.value();
+            }
+            qerr << endl;
+        }
+        return false;
     }
     return true;
 }
 
 void Args::add(Arg *arg){
     args.insert(arg->getName(), arg);
+    if(arg->getShortname() != "")
+        shortArgs.insert(arg->getShortname(), arg);
 }
 
 QString Args::getString(QString key){
@@ -127,12 +187,23 @@ void Args::help(){
     QHashIterator<QString, Arg*> i(this->args);
     while(i.hasNext()){
         i.next();
-        qerr << QString("%1").arg("--" + i.key(), 20);
-        if(i.value()->getRequired()){
-            qerr << QString("=<%1>").arg(i.key().toUpper(), -30);
+        Arg arg = *i.value();
+
+        /* print the short argument */
+        if(arg.getShortname() == ""){
+            qerr << QString("%1  ").arg("", 4);
         }else{
-            qerr << QString("=%1").arg(i.value()->getDefault().toString(), -30);
+            qerr << QString("%1, ").arg("-" + arg.getShortname(), 4);
         }
+
+        /* print the long argument and the default value */
+        if(i.value()->getRequired()){
+            qerr << QString("%1=<%2>").arg("--" + i.key(), i.key().toUpper());
+        }else{
+            qerr << QString("%1=[%2]").arg("--" + i.key(), arg.getDefault().toString());
+        }
+
+        /* print the help */
         if(i.value()->getHelp().length()){
             qerr << " -- " << i.value()->getHelp();
         }

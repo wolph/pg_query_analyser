@@ -12,6 +12,7 @@
 class Args : public QHash<QString, QVariant>{
 private:
     QHash<QString, Arg*> args;
+    QHash<QString, Arg*> shortArgs;
     QString program;
 
 public:
@@ -19,7 +20,8 @@ public:
     void add(Arg *arg);
 
     QString getString(QString key);
-    int getFile(QFile *filePtr, QString key, QFlags<QIODevice::OpenModeFlag> flags);
+    int getFile(QFile *file, QString key,
+        QFlags<QIODevice::OpenModeFlag> flags);
     QStringList getStringList(QString key, QString separator=",");
     int getInt(QString key);
     bool getBool(QString key);
