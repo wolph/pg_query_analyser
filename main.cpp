@@ -125,6 +125,12 @@ int main(int argc, char **argv){
     timer.start();
 
     uint lines = 0;
+
+    if(input_file.atEnd()){
+        qerr << "The input file (" << input_file.fileName();
+        qerr << ") seems to be empty" << endl;
+    }
+
     while (!input_file.atEnd()) {
         line = input_file.readLine(4096);
         lines++;
