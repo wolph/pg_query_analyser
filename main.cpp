@@ -58,7 +58,10 @@ QString print_queries(QList<Query*> queries, int top){
     return output_string;
 }
 
-
+void escape(QString arg){
+    arg.replace(">", "&gt;");
+    arg.replace(">", "&lt;");
+}
 
 int main(int argc, char **argv){
     QTextStream qout(stdout, QIODevice::WriteOnly);
@@ -144,8 +147,7 @@ int main(int argc, char **argv){
 
         if(new_query_id != old_query_id || old_line_id < new_line_id){
             old_query_id = new_query_id;
-            statement.replace(">", "&gt;");
-            statement.replace("<", "&lt;");
+            escape(statement);
             QString hashStatement = Query::normalize(statement);
             statement = Query::format(statement);
             if((
