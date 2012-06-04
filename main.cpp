@@ -70,12 +70,16 @@ int main(int argc, char **argv){
 
     Args args;
     args.add(new Arg("v", "verbose", Arg::setTrue, QVariant(false)));
-    args.add(new Arg("i", "input-file", Arg::readableFile, QVariant("/var/log/postgresql.log")));
-    args.add(new Arg("o", "output-file", Arg::writableFile, QVariant("report.html")));
+    //args.add(new Arg("i", "input-file", Arg::readableFile, QVariant("/var/log/postgresql.log")));
+    args.add(new Arg("i", "input-file", Arg::readableFile,
+        QVariant("/var/log/postgresql/postgresql-9.1-main.log")));
+    args.add(new Arg("o", "output-file", Arg::writableFile,
+        QVariant("report.html")));
     args.add(new Arg("u", "users", Arg::toString, QVariant()));
     args.add(new Arg("d", "databases", Arg::toString, QVariant()));
     args.add(new Arg("top", Arg::toInt, QVariant(20)));
-    args.add(new Arg("t", "query-types", Arg::toString, QVariant("SELECT,UPDATE,INSERT,DELETE")));
+    args.add(new Arg("t", "query-types", Arg::toString,
+        QVariant("SELECT,UPDATE,INSERT,DELETE")));
 
     if(!args.parse(argc, argv)){
         args.help();
@@ -239,5 +243,5 @@ int main(int argc, char **argv){
         output << footer.readAll();
         footer.close();
     }
-    qout << "Wrote to file " << args.getString("output_file") << endl;
+    qout << "Wrote to file " << args.getString("output-file") << endl;
 }
