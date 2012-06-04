@@ -80,33 +80,40 @@ bool Args::getBool(QString key){
     return value(key).toBool();
 }
 
-int Args::getFile(QFile *filePtr, QString key, QFlags<QIODevice::OpenModeFlag> flags){
+int Args::getFile(QFile *file, QString key, QFlags<QIODevice::OpenModeFlag> flags){
     QString filename = getString(key);
-    QFile file(filePtr);
     QTextStream qerr(stderr, QIODevice::WriteOnly);
 
     if(filename == "-"){
         if(flags & QIODevice::ReadOnly){
             qerr << "Reading from stdin" << endl;
             
-            if(!file.open(stdin, flags)){
+            if(!file->open(stdin, flags)){
                 qerr << "Unable to read stdin, exiting" << endl;
                 return -2;
             }
         }else{
             qerr << "Writing to stdout" << endl;
             
-            if(!file.open(stdout, flags)){
+            if(!file->open(stdout, flags)){
                 qerr << "Unable to write to stdout, exiting" << endl;
                 return -3;
             }
-        }        
+        }
     }else{
-        qerr << "Opening " << filename << endl;
-
-        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
-            qerr << "Unable to open '" << filename << "' exiting" << endl;
-            return -4;
+        file->setFileName(filename);
+        if(flags & QIODevice::ReadOnly){
+            qerr << "Reading from " << filename << endl;
+            if (!file->open(flags)){
+                qerr << "Unable to open '" << filename << "', exiting" << endl;
+                return -4;
+            }
+        }else{
+            qerr << "Writing to " << filename << endl;
+            if (!file->open(flags)){
+                qerr << "Unable to open '" << filename << "', exiting" << endl;
+                return -4;
+            }
         }
     }
     return 0;

@@ -42,16 +42,16 @@ Arg::Arg(const Arg &arg) : QObject(){
 }
 
 QVariant Arg::writableFile(QString filename){
-    if(QFileInfo(filename).isWritable()){
+    if(filename == "-" || QFileInfo(filename).isWritable()){
         return QVariant(filename);
     }
-    return QVariant();;
+    return QVariant();
 }
 
 QVariant Arg::readableFile(QString filename){
-    if(QFileInfo(filename).isReadable()){
+    if(filename == "-" || QFileInfo(filename).isReadable()){
         return QVariant(filename);
     }
-    return QVariant();;
+    return QVariant();
 }
 
