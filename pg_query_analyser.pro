@@ -1,6 +1,18 @@
 QT += sql
 QT -= gui
 TARGET = pg_query_analyser
+
+target.path = /usr/bin
+INSTALLS += target
+
+templates.path = /usr/share/pg_query_analyser/templates
+templates.files = templates/*
+INSTALLS += templates
+
+static.path = /usr/share/pg_query_analyser/static
+static.files = static/*
+INSTALLS += static
+
 CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = app
@@ -17,3 +29,4 @@ HEADERS += \
     queries.h
 OTHER_FILES += templates/header.html \
     templates/footer.html
+
