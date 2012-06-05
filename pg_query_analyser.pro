@@ -20,3 +20,5 @@ HEADERS += \
     queries.h
 OTHER_FILES += header.html \
     footer.html
+
+unix|win32: LIBS += -lpcrecpp

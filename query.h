@@ -5,6 +5,7 @@
 #include <QHash>
 #include <QRegExp>
 #include <QStringList>
+#include <pcrecpp.h>
 
 class Query : public QObject{
 public:
@@ -22,7 +23,9 @@ public:
     uint getAverageDuration();
     uint getExecutions(){return executions;}
     static QString normalize(QString statement);
+    static void normalize(string *statement);
     static QString format(QString statement);
+    static void format(string *statement);
 
 private:
     QString statement;

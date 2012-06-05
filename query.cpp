@@ -34,45 +34,41 @@ uint Query::getAverageDuration(){
     return this->totalDuration / this->executions;
 }
 
-QRegExp filter_digits("([^_a-zA-Z0-9])\\d+");
-QRegExp filter_limit("LIMIT \\d+", Qt::CaseInsensitive);
-QRegExp filter_operator("\\s*(!=|>=|<=|!=|<|>|=)\\s*(\\d+|E?'[^']*')");
-QRegExp filter_in(" (in|IN)\\s+\\([^\\)]+\\)");
-QRegExp newline_match("\\s+(FROM|WHERE|LIMIT|GROUP BY|ORDER BY|LEFT JOIN|RIGHT JOIN|LEFT OUTER JOIN|RIGHT OUTER JOIN|JOIN)");
-QRegExp tabnewline_match("\\s+(AND|OR)");
-
-#include <QTextStream>
-QTextStream out(stdout, QIODevice::WriteOnly);
+// QRegExp filter_digits("([^_a-zA-Z0-9])\\d+");
+pcrecpp::RE filter_digits("([^_a-zA-Z0-9])\\d+");
+pcrecpp::RE filter_limit("LIMIT \\d+");
+pcrecpp::RE filter_operator("\\s*(!=|>=|<=|!=|<|>|=)\\s*(\\d+|E?'[^']*')");
+pcrecpp::RE filter_in(" (in|IN)\\s+\\([^\\)]+(\\)|$)");
+pcrecpp::RE newline_match("\\s+(FROM|WHERE|LIMIT|GROUP BY|ORDER BY|LEFT JOIN|RIGHT JOIN|LEFT OUTER JOIN|RIGHT OUTER JOIN|JOIN)");
+pcrecpp::RE tabnewline_match("\\s+(AND|OR)");
+pcrecpp::RE comma_match(", ");
+pcrecpp::RE whitespace_match("\\s+");
 
 QString Query::normalize(QString statement){
-    statement = statement.simplified();
+    string stmt = statement.toUtf8().constData();
+    normalize(&stmt);
+    return QString::fromStdString(stmt);
+}
 
-    int start_index = 0;
-    do{
-        start_index = statement.indexOf(" IN (", start_index);
-        if(start_index != -1){
-            start_index += 5;
-            int stop_index = statement.indexOf(QString(")"), start_index);
-            if(stop_index != -1){
-                statement = statement.replace(start_index, (stop_index - start_index), "N");
-            }else{
-                statement = statement.replace(start_index, (statement.length() - start_index), "N)");
-            }
-        }
-    }while(start_index != -1);
+void Query::normalize(string *statement){
+    whitespace_match.GlobalReplace(" ", statement);
 
-    statement = statement.replace(filter_limit, "LIMIT N");
-    statement = statement.replace(filter_operator, " \\1 N");
-    statement = statement.replace(filter_digits, "\\1N");
-    statement = format(statement);
-    return statement;
+    filter_in.GlobalReplace(" IN (N)", statement);
+    filter_limit.GlobalReplace("LIMIT N", statement);
+    filter_operator.GlobalReplace(" \\1 N", statement);
+    filter_digits.GlobalReplace("\\1N", statement);
+    format(statement);
 }
 
 QString Query::format(QString statement){
-    statement = statement.replace(", ", ",\n\t");
-    statement = statement.replace(newline_match, "\n\\1");
-    statement = statement.replace(tabnewline_match, "\n\t\\1");
-    statement.squeeze();
-    return statement;
+    string stmt = statement.toUtf8().constData();
+    format(&stmt);
+    return QString::fromStdString(stmt);
+}
+
+void Query::format(string *statement){
+    comma_match.GlobalReplace(",\n\t", statement);
+    newline_match.GlobalReplace("\n\\1", statement);
+    tabnewline_match.GlobalReplace("\n\t\\1", statement);
 }
 
