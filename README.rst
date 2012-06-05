@@ -17,6 +17,8 @@ Install
 
     qmake
     make
+    make test
+    sudo make install
 
 Usage
 -----
@@ -25,29 +27,19 @@ From stdin:
 
 ::
 
-    cat /var/log/postgresql/postgresql.log | head -n 100000 | ./pg_query_analyser --from_stdin=true
+    cat /var/log/postgresql/postgresql.log | head -n 100000 | ./pg_query_analyser -i -
 
 
 From file:
 
 ::
 
-    ./pg_query_analyser --input_file=/var/log/postgresql/postgresql.log
+    ./pg_query_analyser --input-file=/var/log/postgresql/postgresql.log
 
 
 
 Help
 ----
 
-::
-
-    # ./pg_query_analyser --help                                                                                                                                                                                                                                                           /home/rick/pg_query_analyser
-    Usage: ./pg_query_analyser [flags]
-    Options: 
-            --input_file=/var/log/postgresql/postgresql-8.4-main.log
-            --users=                              
-            --verbose=false                         
-            --from_stdin=false                         
-            --databases=                              
-            --output_file=/usr/local/www/phpPgAdmin/report.html   
+.. program-output:: ../pg_query_analyser -h
 
