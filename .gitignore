@@ -3,3 +3,5 @@ pg_query_analyser
 debug
 .bzr*
 Makefile
+log
+report.html
