@@ -5,3 +5,4 @@ debug
 Makefile
 log
 report.html
+pg_query_analyser.pro.user
