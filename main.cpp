@@ -209,9 +209,9 @@ int main(int argc, char **argv){
         }
     }
 
-    QFile header("header.html");
+    QFile header("templates/header.html");
     if (!header.open(QIODevice::ReadOnly | QIODevice::Text)){
-        qout << "Unable to open header.html" << endl;
+        qout << "Unable to open templates/header.html" << endl;
         return -4;
     }else{
         output << header.readAll();
@@ -241,9 +241,9 @@ int main(int argc, char **argv){
     output << "<h2 id=\"NormalizedQueriesSlowestAverageReport\">Slowest queries (N) <a href=\"#top\" title=\"Back to top\">^</a></h2>";
     output << print_queries(queries.sortedQueries(Queries::mostAverageDuration), top);
 
-    QFile footer("footer.html");
+    QFile footer("templates/footer.html");
     if (!footer.open(QIODevice::ReadOnly | QIODevice::Text)){
-        qout << "Unable to open footer.html" << endl;
+        qout << "Unable to open templates/footer.html" << endl;
         return -5;
     }else{
         output << footer.readAll();

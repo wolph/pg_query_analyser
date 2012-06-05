@@ -1,6 +1,3 @@
-# -------------------------------------------------
-# Project created by QtCreator 2009-10-15T11:52:02
-# -------------------------------------------------
 QT += sql
 QT -= gui
 TARGET = pg_query_analyser
@@ -18,5 +15,5 @@ HEADERS += \
     args.h \
     arg.h \
     queries.h
-OTHER_FILES += header.html \
-    footer.html
+OTHER_FILES += templates/header.html \
+    templates/footer.html
