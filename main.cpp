@@ -70,6 +70,7 @@ int main(int argc, char **argv){
     QTextStream qin(stdin, QIODevice::ReadOnly);
 
     Args args;
+    args.add(new Arg("h", "help", Arg::setTrue, QVariant(false)));
     args.add(new Arg("v", "verbose", Arg::setTrue, QVariant(false)));
     //args.add(new Arg("i", "input-file", Arg::readableFile, QVariant("/var/log/postgresql.log")));
     args.add(new Arg("i", "input-file", Arg::readableFile,
