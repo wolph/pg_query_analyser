@@ -3,7 +3,8 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>PG Query Analyser: PostgreSQL log analysis report</title>
+    <title>PG Query Analyser: PostgreSQL log analysis report</title>
+    <link type="text/css" rel="stylesheet" href="google-code-prettify/prettify.css">
   <style type="text/css">
 /*<![CDATA[*/
 
@@ -91,6 +92,8 @@
   div.c1 {display:none;}
   /*]]>*/
   </style>
+  <!-- intentionally loading this at the beginning of the document so with
+    big/slow reports it works before the page is fully loaded -->
   <script type="text/javascript">
    /* <![CDATA[ */
     function toggleExamples(caller, n) {
@@ -105,13 +108,22 @@
             }
         }
     }
+
+    function highlight(o){
+        var originalClassName = o.className;
+        o.className = 'prettyprint lang-sql';
+        prettyPrint();
+        o.className = originalClassName;
+    }
     /* ]]> */
-  </script>
+    </script>
+    <script src="google-code-prettify/prettify.js"></script>
+    <script src="google-code-prettify/lang-sql.js"></script>
 </head>
 
 <body>
   <div id="content">
-    <h1 id="top">PG Query Analyser: PostgreSQL log analysis report</h1>
+      <h1 id="top">PG Query Analyser: PostgreSQL log analysis report</h1>
 
     <div class="menu">
       <a href="#NormalizedQueriesMostTimeReport">Queries that took up the most time (N)</a> |
@@ -120,3 +132,5 @@
     </div>
 
     <p>Normalized reports are marked with a "(N)".</p>
+
+      <h4>Tip: click on an SQL block to enable syntax highlighting</h4>

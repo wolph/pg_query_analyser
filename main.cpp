@@ -6,6 +6,12 @@ int min(int a, int b){
 
 int example = 0;
 
+QString escape(QString arg){
+    arg = arg.replace(">", "&gt;");
+    arg = arg.replace(">", "&lt;");
+    return arg;
+}
+
 QString print_queries(QList<Query*> queries, int top){
     QString output_string;
     QTextStream output(&output_string, QIODevice::WriteOnly);
@@ -27,7 +33,7 @@ QString print_queries(QList<Query*> queries, int top){
           "<td class=\"top center\">%5 ms</td>"
           "<td class=\"top center\">%6</td>"
           "<td class=\"top center\">%7</td>"
-          "<td><pre>%8</pre></td></tr>"
+          "<td><pre onclick=\"highlight(this);\">%8</pre></td></tr>"
           "<tr><td colspan=\"6\">"
           "<input type=\"button\" class=\"examplesButton\" value=\"Show examples\" "
           "onclick=\"javascript:toggleExamples(this, %9);\" />"
@@ -38,16 +44,16 @@ QString print_queries(QList<Query*> queries, int top){
             .arg(q->getAverageDuration() / 1000) \
             .arg(q->getUser()) \
             .arg(q->getDatabase()) \
-            .arg(q->getStatement()) \
+            .arg(escape(q->getStatement())) \
             .arg(example);
 
         QStringList examples = q->getExamples();
         QList<uint> durations = q->getDurations();
         for(int j=0; j<examples.count(); j++){
-            output << QString("<div class=\"example%1 sql\">%2 | %3</div>") \
+            output << QString("<div class=\"example%1 sql\">%2ms | <pre onclick=\"highlight(this);\">%3</pre></div>") \
                 .arg(j % 2) \
                 .arg(durations.at(j)) \
-                .arg(examples.at(j));
+                .arg(escape(examples.at(j)));
         }
 
         output << "</div></td></tr>";
@@ -56,11 +62,6 @@ QString print_queries(QList<Query*> queries, int top){
     output << "</table>";
 
     return output_string;
-}
-
-void escape(QString arg){
-    arg.replace(">", "&gt;");
-    arg.replace(">", "&lt;");
 }
 
 int main(int argc, char **argv){
@@ -157,7 +158,6 @@ int main(int argc, char **argv){
 
         if(new_query_id != old_query_id || old_line_id < new_line_id){
             old_query_id = new_query_id;
-            escape(statement);
             QString hashStatement = Query::normalize(statement);
             statement = Query::format(statement);
             if((
