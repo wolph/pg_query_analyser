@@ -1,0 +1,12 @@
+Document: pg-query-analyser
+Title: Debian pg-query-analyser Manual
+Author: Rick van Hattem <Rick.van.Hattem@Fawo.nl>
+Abstract: pg_query_analyser is a C++ clone of the PgFouine log analyser.
+Section: 1
+
+Format: rest
+Files: /usr/share/doc/pg-query-analyser/pg-query-analyser.rst.gz
+
+Format: HTML
+Index: /usr/share/doc/pg-query-analyser/index.html
+Files: /usr/share/doc/pg-query-analyser/*.html

@@ -1,0 +1,17 @@
+Source: pg-query-analyser
+Section: database
+Priority: optional
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+XSBC-Original-Maintainer: Rick van Hattem <Rick.van.Hattem@Fawo.nl>
+Build-Depends: debhelper (>= 8.0.0), libqt4-dev (>= 4.6.0), qt4-qmake (>= 4.6.0)
+Standards-Version: 3.9.2
+Homepage: https://github.com/WoLpH/pg_query_analyser
+Vcs-Git: git://github.com/WoLpH/pg_query_analyser.git
+Vcs-Browser: https://github.com/WoLpH/pg_query_analyser
+
+Package: pg-query-analyser
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: pg_query_analyser is a C++ clone of the PgFouine log analyser.
+ Processing logs with millions of lines only takes a few minutes with this
+ parser while PgFouine chokes long before that.
