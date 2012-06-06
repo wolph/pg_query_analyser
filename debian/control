@@ -3,7 +3,7 @@ Section: database
 Priority: optional
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 XSBC-Original-Maintainer: Rick van Hattem <Rick.van.Hattem@Fawo.nl>
-Build-Depends: debhelper (>= 8.0.0), libqt4-dev (>= 4.6.0), qt4-qmake (>= 4.6.0)
+Build-Depends: debhelper (>= 7.0.0), libqt4-dev (>= 4.6.0), qt4-qmake (>= 4.6.0)
 Standards-Version: 3.9.2
 Homepage: https://github.com/WoLpH/pg_query_analyser
 Vcs-Git: git://github.com/WoLpH/pg_query_analyser.git
