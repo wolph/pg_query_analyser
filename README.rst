@@ -46,6 +46,9 @@ For a full build+analyze on Ubuntu:
 
 Help
 ----
+
+::
+
     # ./pg_query_analyser -h
     Usage: ./pg_query_analyser [flags]
     Options: 
