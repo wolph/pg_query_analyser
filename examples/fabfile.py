@@ -133,7 +133,7 @@ def wait():
     duration = time.time() - start_time
     while duration < env.log_duration:
         duration = time.time() - start_time
-        eta = env.log_duration - duration
+        eta = max(env.log_duration - duration, 0)
         
         seconds = eta % 60
         minutes = int(eta / 60) % 60
@@ -163,7 +163,7 @@ def wait():
         time.sleep(1)
 
 def is_installed(package):
-    return bool(api.run('dpkg --get-selections | grep %s || true' % package))
+    return bool(api.run('dpkg --get-selections | grep "^%s\s+install$" || true' % package))
 
 def install(package):
     if is_installed(package):
