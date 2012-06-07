@@ -54,11 +54,6 @@ bool Args::parse(int argc, char **argv){
             key = key_re.cap(1);
         }
 
-        /* Called help, exiting to display help */
-        if(tmp == "help"){
-            return false;
-        }
-
         if(i+1 < argc){
             tmp = QString(argv[i+1]);
             if(value == NULL && value_re.exactMatch(tmp)){
@@ -74,14 +69,17 @@ bool Args::parse(int argc, char **argv){
         j.next();
         Arg arg = *j.value();
 
-        /* Called help, exiting to display help */
-        if(arg.getName() == "help"){
-            return false;
-        }
-
         if(args.contains(arg.getName())){
+            /* Called help, exiting to display help */
+            if(arg.getName() == "help"){
+                return false;
+            }
             insert(arg.getName(), arg.callback(args.take(arg.getName())));
         }else if(args.contains(arg.getShortname())){
+            /* Called help, exiting to display help */
+            if(arg.getName() == "help"){
+                return false;
+            }
             insert(arg.getName(),
                 arg.callback(args.take(arg.getShortname())));
         }else if(arg.getRequired()){
