@@ -36,10 +36,25 @@ From file:
 
     ./pg_query_analyser --input-file=/var/log/postgresql/postgresql.log
 
+For a full build+analyze on Ubuntu:
+
+::
+
+    cd examples
+    fab -H <remote-ubuntu-postgres-server> build log_and_analyse
 
 
 Help
 ----
-
-.. program-output:: ../pg_query_analyser -h
+    # ./pg_query_analyser -h
+    Usage: ./pg_query_analyser [flags]
+    Options: 
+      -h, --help=[false]
+      -u, --users=[]
+      -v, --verbose=[false]
+      -i, --input-file=[/var/log/postgresql/postgresql-9.1-main.log]
+      -d, --databases=[]
+      -t, --query-types=[SELECT,UPDATE,INSERT,DELETE]
+      -o, --output-file=[report.html]
+      --top=[20]
 
