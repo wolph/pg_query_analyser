@@ -1,7 +1,8 @@
-import contextlib
 from fabric import context_managers, api, contrib
-import time
+import contextlib
+import datetime
 import re
+import time
 
 environment_files = [
     'fab.env',
@@ -32,7 +33,7 @@ api.env.log_config_filename = 'pg_query_analyser_log.conf'
 api.env.log_config_file = '%(config_path)s/%(log_config_filename)s'
 api.env.log_include_line = 'include \'%(log_config_filename)s\''
 api.env.temp_path = '/mnt/postgres'
-api.env.log_duration = 600
+api.env.log_duration = 60
 api.env.logrotate_command = ('/usr/sbin/logrotate '
     '-f /etc/logrotate.d/postgresql-common')
 api.env.log_file = (
@@ -160,37 +161,89 @@ def wait():
 
         time.sleep(1)
 
+def is_installed(package):
+    return bool(api.run('dpkg --get-selections | grep %s || true' % package))
+
 def install(package):
-    if not api.run('dpkg --get-selections | grep %s || true' % package):
-        api.sudo('apt-get install %s' % package)
+    if is_installed(package):
+        return False
+    else:
+        api.sudo('apt-get install -y %s' % package)
+        return True
+
+def uninstall(package):
+    if is_installed(package):
+        api.sudo('apt-get purge -y %s' % package)
+        return True
+    else:
+        return False
 
 @api.task
 def analyze():
     env = get_env()
     api.sudo('mkdir -p %s' % env.temp_path)
     api.sudo('chown -R %s %s' % (env.user, env.temp_path))
+    with api.cd(env.temp_path):
+        install('libqt4-sql')
 
-    install('libqt4-dev')
-    install('qt4-qmake')
+        architecture = api.run('uname -m')
+        os_version = api.run(
+            'grep -E \'^DISTRIB_RELEASE=\' /etc/lsb-release '
+            '| awk -F \'=\' \'{print $2}\''
+        )
+        pg_query_analyser = api.env.pg_query_analyser_file % (
+            os_version,
+            architecture,
+        )
 
-    architecture = api.run('uname -m')
-    os_version = api.run(
-        'grep -E \'^DISTRIB_RELEASE=\' /etc/lsb-release '
-        '| awk -F \'=\' \'{print $2}\''
-    )
-    pg_query_analyser = api.env.pg_query_analyser_file % (
-        os_version,
-        architecture,
-    )
-
-    api.put(pg_query_analyser, 'pg_query_analyser', mode=0755)
-    api.run(env.pg_query_analyser_command)
+        api.put(pg_query_analyser, 'pg_query_analyser', mode=0755)
+        api.run(env.pg_query_analyser_command)
+        api.get('report.html', 'report_%s_%s.html' % (
+            env.host,
+            datetime.datetime.now(),
+        ))
 
 @api.task
-def analyze_db():
-    env = get_env()
-    analyze()
-    return
+def build():
+    installed_git = install('git')
+    installed_libqt = install('libqt4-dev')
+    installed_qmake = install('qt4-qmake')
+    dir = 'pg_query_analyser_fab_build'
+    api.run('git clone https://github.com/WoLpH/pg_query_analyser.git %s' % dir)
+
+    with api.cd(dir):
+        api.run('qmake')
+        api.run('make')
+
+        architecture = api.run('uname -m')
+        os_version = api.run(
+            'grep -E \'^DISTRIB_RELEASE=\' /etc/lsb-release '
+            '| awk -F \'=\' \'{print $2}\''
+        )
+        pg_query_analyser = api.env.pg_query_analyser_file % (
+            os_version,
+            architecture,
+        )
+        api.get('pg_query_analyser', pg_query_analyser)
+
+    autoremove = False
+    if installed_git:
+        uninstall('git')
+        autoremove = True
+    if installed_libqt:
+        uninstall('libqt4-dev')
+        autoremove = True
+    if installed_qmake:
+        uninstall('qt4-qmake')
+        autoremove = True
+
+    if autoremove:
+        api.sudo('apt-get autoremove -y')
+
+    api.run('rm -rf %s' % dir)
+
+@api.task
+def log_and_analyze():
     enable_logging()
     try:
         wait()
@@ -199,20 +252,4 @@ def analyze_db():
             analyze()
         finally:
             disable_logging()
-
-    #database = database or api.env.default_database
-    #info = api.host_info[api.env.host_string]
-    #db_name = info.tags.get('Name')
-    #api.sudo('perl -pi -e "s/log_min_duration_statement = .*/log_min_duration_statement = 0/" /etc/postgresql/9.*/main/postgresql.conf')
-    #api.sudo('/etc/init.d/postgresql reload')
-    #time.sleep(30)
-    #api.sudo('perl -pi -e "s/log_min_duration_statement = .*/log_min_duration_statement = 500/" /etc/postgresql/9.*/main/postgresql.conf')
-    #api.sudo('/etc/init.d/postgresql reload')
-    #api.run('tail -n 100000 /var/log/postgresql/postgresql-9.*-main.log > /tmp/pgfouine.txt')
-    #api.run('gzip -f /tmp/pgfouine.txt')
-    #api.get('/tmp/pgfouine.txt.gz', local_path = '/tmp/latest-pgfouine.txt.gz')
-    #api.local('gunzip -f /tmp/latest-pgfouine.txt.gz')
-    #now = int(time.time())
-    #api.local('~/src/pgfouine/pgfouine.php -logtype stderr -file /tmp/latest-pgfouine.txt -quiet > /tmp/pgfouine-%s-%d.html 2>1' % (db_name, now))
-    #api.local('open /tmp/pgfouine-%s-%d.html' % (db_name, now) )
 
