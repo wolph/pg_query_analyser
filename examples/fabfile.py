@@ -201,7 +201,7 @@ def analyse():
         api.sudo(env.pg_query_analyser_command)
         api.get('report.html', 'report_%s_%s.html' % (
             env.host,
-            datetime.datetime.now(),
+            datetime.datetime.now().strftime('%Y%m%d%H%M%S'),
         ))
 
 @api.task
