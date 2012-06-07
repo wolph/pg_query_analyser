@@ -40,6 +40,7 @@ api.env.log_file = (
     '/var/log/postgresql/postgresql-%(postgres_version)s-main.log')
 api.env.pg_query_analyser_file = 'pg_query_analyser-%s-%s'
 api.env.pg_query_analyser_command = './pg_query_analyser -i %(log_file)s'
+
 def get_env():
     env = {}
     env.update(api.env)
@@ -179,7 +180,7 @@ def uninstall(package):
         return False
 
 @api.task
-def analyze():
+def analyse():
     env = get_env()
     api.sudo('mkdir -p %s' % env.temp_path)
     api.sudo('chown -R %s %s' % (env.user, env.temp_path))
@@ -197,7 +198,7 @@ def analyze():
         )
 
         api.put(pg_query_analyser, 'pg_query_analyser', mode=0755)
-        api.run(env.pg_query_analyser_command)
+        api.sudo(env.pg_query_analyser_command)
         api.get('report.html', 'report_%s_%s.html' % (
             env.host,
             datetime.datetime.now(),
@@ -243,13 +244,13 @@ def build():
     api.run('rm -rf %s' % dir)
 
 @api.task
-def log_and_analyze():
+def log_and_analyse():
     enable_logging()
     try:
         wait()
     finally:
         try:
-            analyze()
+            analyse()
         finally:
             disable_logging()
 
