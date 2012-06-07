@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>templates/footer.html</file>
+    <file>templates/header.html</file>
+</qresource>
+</RCC>

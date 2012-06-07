@@ -30,3 +30,5 @@ HEADERS += \
 OTHER_FILES += templates/header.html \
     templates/footer.html
 
+RESOURCES = pg_query_analyser.qrc
+
