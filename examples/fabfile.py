@@ -52,11 +52,11 @@ def get_env():
     >>> get_env().bar
     'The value of Bar and foo: The value of Foo!'
     
-    The parser does `ENV_PARSE_PASSES` over the variables so nested variables
+    The parser does :py:const:`ENV_PARSE_PASSES` over the variables so nested variables
     are supported.
 
     It is also possible to add host-specific configuration overrides using
-    the `ENV_OVERRIDES`. Something like this will give you host specific
+    the :py:const:`ENV_OVERRIDES`. Something like this will give you host specific
     support:
 
     >>> from fabric import api
@@ -96,9 +96,9 @@ def wrap_environments():
     files or just add global defaults.
 
     To use the general overrides simply add your settings to one of the files
-    in `ENVIRONMENT_FILES` and/or add extra files to that file.
+    in :py:const:`ENVIRONMENT_FILES` and/or add extra files to that file.
     To use the host-specific configuration files the settings must be in one
-    of the files mentioned in `AVAILABLE_ENVIRONMENT_FILES`.
+    of the files mentioned in :py:const:`AVAILABLE_ENVIRONMENT_FILES`.
     '''
     if api.env.host in AVAILABLE_ENVIRONMENT_FILES:
         env_files = AVAILABLE_ENVIRONMENT_FILES[api.env.host]
@@ -118,12 +118,15 @@ def wrap_environments():
 def enable_logging():
     '''Enables logging on the Postgres server
 
-    1. Copy pg_query_analyser_log.conf to the remote server
-    2. Include that config file in Postgres
+    1. :py:func:`Copy <fabric.operations.put>` `pg_query_analyser_log.conf` to the
+       remote server
+    2. Add `include pg_query_analyser_log.conf ` to the main postgres config file
     3. Reload postgres
 
-    Including the config file is done by appending the include line to
-    the main Postgres config or by uncommenting the line if already exists.
+    Including the config file is done by
+    :py:func:`appending <fabric.contrib.files.append>` the include line to
+    the main Postgres config or by :py:func:`uncommenting <uncomment>` the 
+    line if already exists.
     '''
     env = get_env()
     api.put(
@@ -147,7 +150,8 @@ def enable_logging():
 def comment(file, line):
     '''Comment the given line in the given file using perl
     
-    This essentially does the same as the `comment` method in :py:mod:`fabric.contrib.files`
+    This essentially does the same as the fabric 
+    :py:func:`comment <fabric.contrib.files.comment>` method
     but because of weird escaping issues I couldn't get that one to work.
     '''
     api.sudo('perl -pi -e "s/^%s$/# %s/" %s' % (
@@ -159,7 +163,8 @@ def comment(file, line):
 def uncomment(file, line):
     '''Uncomment the given line in the given file using perl
     
-    This essentially does the same as the `uncomment` method in :py:mod:`fabric.contrib.files`
+    This essentially does the same as the fabric 
+    :py:func:`uncomment <fabric.contrib.files.uncomment>` method
     but because of weird escaping issues I couldn't get that one to work.
     '''
     api.sudo('perl -pi -e "s/^# %s$/%s/" %s' % (
@@ -172,7 +177,8 @@ def uncomment(file, line):
 def disable_logging():
     '''Disable logging on the Postgres server
 
-    1. Comment the include for the config file from the enable step above
+    1. :py:func:`Comment <comment>` the include for the config file from the
+       enable step above
     2. Reload postgres
     '''
     env = get_env()
@@ -188,7 +194,7 @@ def disable_logging():
 def wait():
     '''A waiting task with a ETA indicator
 
-    This task waits `api.env.log_duration` seconds and tells you how much
+    This task waits :py:attr:`api.env.log_duration` seconds and tells you how much
     time is left.
     '''
     env = get_env()
@@ -339,10 +345,10 @@ def build():
 def log_and_analyse():
     '''Do a full log and analyse cycle
     
-    1. `enable_logging`
-    2. `wait`
-    3. `analyse`
-    4. `disable_logging`
+    1. :py:func:`enable_logging`
+    2. :py:func:`wait`
+    3. :py:func:`analyse`
+    4. :py:func:`disable_logging`
     '''
     enable_logging()
     try:
