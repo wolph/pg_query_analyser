@@ -4,14 +4,14 @@ import datetime
 import re
 import time
 
-environment_files = [
+ENVIRONMENT_FILES = [
     'fab.env',
     '/etc/fab.env',
     '/usr/etc/fab.env',
     '/usr/local/etc/fab.env',
     '~/.fab.env',
 ]
-available_environment_files = {}
+AVAILABLE_ENVIRONMENT_FILES = {}
 
 
 # Special env overrides for a specific env key
@@ -42,6 +42,31 @@ api.env.pg_query_analyser_file = 'pg_query_analyser-%s-%s'
 api.env.pg_query_analyser_command = './pg_query_analyser -i %(log_file)s'
 
 def get_env():
+    '''Get the env with all variables parsed using Python string formatting
+
+    Example:
+
+    >>> from fabric import api
+    >>> api.env.foo = 'The value of Foo!'
+    >>> api.env.bar = 'The value of Bar and foo: %(foo)s'
+    >>> get_env().bar
+    'The value of Bar and foo: The value of Foo!'
+    
+    The parser does `ENV_PARSE_PASSES` over the variables so nested variables
+    are supported.
+
+    It is also possible to add host-specific configuration overrides using
+    the `ENV_OVERRIDES`. Something like this will give you host specific
+    support:
+
+    >>> from fabric import api
+    >>> ENV_OVERRIDES['host'] = {'my_special_host': {'foo': 'Special Foo!'}}
+    >>> api.env.foo = 'The value of Foo!'
+    >>> api.env.bar = 'The value of Bar and foo: %(foo)s'
+    >>> api.env.host = 'my_special_host'
+    >>> get_env().bar
+    'The value of Bar and foo: Special Foo!'
+    '''
     env = {}
     env.update(api.env)
     for setting, overrides in ENV_OVERRIDES.iteritems():
@@ -65,23 +90,41 @@ def get_env():
 
 
 def wrap_environments():
-    '''Wrap the command with these environment files'''
-    if api.env.host in available_environment_files:
-        env_files = available_environment_files[api.env.host]
+    '''Wrap the command with these environment files
+    
+    By using this context you can add overrides for specific hosts in external
+    files or just add global defaults.
+
+    To use the general overrides simply add your settings to one of the files
+    in `ENVIRONMENT_FILES` and/or add extra files to that file.
+    To use the host-specific configuration files the settings must be in one
+    of the files mentioned in `AVAILABLE_ENVIRONMENT_FILES`.
+    '''
+    if api.env.host in AVAILABLE_ENVIRONMENT_FILES:
+        env_files = AVAILABLE_ENVIRONMENT_FILES[api.env.host]
 
     else:
         env_files = []
-        for env_file in environment_files:
+        for env_file in ENVIRONMENT_FILES:
             if contrib.files.exists(env_file):
                 env_files.append(env_file)
 
-        available_environment_files[api.env.host] = env_files
+        AVAILABLE_ENVIRONMENT_FILES[api.env.host] = env_files
 
     contexts = [context_managers.prefix('source %r' % f) for f in env_files]
     return contextlib.nested(*contexts)
 
 @api.task
 def enable_logging():
+    '''Enables logging on the Postgres server
+
+    1. Copy pg_query_analyser_log.conf to the remote server
+    2. Include that config file in Postgres
+    3. Reload postgres
+
+    Including the config file is done by appending the include line to
+    the main Postgres config or by uncommenting the line if already exists.
+    '''
     env = get_env()
     api.put(
         env.log_config_filename,
@@ -102,6 +145,11 @@ def enable_logging():
         api.sudo(env.logrotate_command)
 
 def comment(file, line):
+    '''Comment the given line in the given file using perl
+    
+    This essentially does the same as the `comment` method in :py:mod:`fabric.contrib.files`
+    but because of weird escaping issues I couldn't get that one to work.
+    '''
     api.sudo('perl -pi -e "s/^%s$/# %s/" %s' % (
         line,
         line,
@@ -109,6 +157,11 @@ def comment(file, line):
     ))
 
 def uncomment(file, line):
+    '''Uncomment the given line in the given file using perl
+    
+    This essentially does the same as the `uncomment` method in :py:mod:`fabric.contrib.files`
+    but because of weird escaping issues I couldn't get that one to work.
+    '''
     api.sudo('perl -pi -e "s/^# %s$/%s/" %s' % (
         line,
         line,
@@ -117,6 +170,11 @@ def uncomment(file, line):
 
 @api.task
 def disable_logging():
+    '''Disable logging on the Postgres server
+
+    1. Comment the include for the config file from the enable step above
+    2. Reload postgres
+    '''
     env = get_env()
     comment(
         env.config_file,
@@ -128,6 +186,11 @@ def disable_logging():
 
 @api.task
 def wait():
+    '''A waiting task with a ETA indicator
+
+    This task waits `api.env.log_duration` seconds and tells you how much
+    time is left.
+    '''
     env = get_env()
     start_time = time.time()
     duration = time.time() - start_time
@@ -163,9 +226,13 @@ def wait():
         time.sleep(1)
 
 def is_installed(package):
+    '''ubuntu/debian specific command to check if a package is currently
+    installed'''
     return bool(api.run('dpkg --get-selections | grep "^%s\s+install$" || true' % package))
 
 def install(package):
+    '''Install the package if not installed and returns whether it was
+    installed or already existed'''
     if is_installed(package):
         return False
     else:
@@ -173,6 +240,10 @@ def install(package):
         return True
 
 def uninstall(package):
+    '''Uninstall the package and purge the settings
+    
+    WARNING: Since this purges the setting this should only be used if this command
+    was the command that installed the package'''
     if is_installed(package):
         api.sudo('apt-get purge -y %s' % package)
         return True
@@ -181,6 +252,17 @@ def uninstall(package):
 
 @api.task
 def analyse():
+    '''Upload the query analyser, analyse the logs and download the report
+
+    1. Create a temporary directory to do the parsing (default /tmp/postgres)
+    2. Check if  libqt4-sql is installed as this is a requirement to run the
+       app. if it's not installed, it will be installed automatically.
+    3. Upload the pg_query_analyser binary for the platform. automatically
+       uploads the version for this ubuntu version with this architecture (if
+       you don't have the binary, use the build command)
+    4. Run pg_query_analyser over the current logfile
+    5. Copy the report to your local machine
+    '''
     env = get_env()
     api.sudo('mkdir -p %s' % env.temp_path)
     api.sudo('chown -R %s %s' % (env.user, env.temp_path))
@@ -206,13 +288,23 @@ def analyse():
 
 @api.task
 def build():
+    '''Build the application on the remote system and download to the local pc
+
+    1. install `git`, `libqt4-dev` and `qt4-qmake` if needed
+    2. git clone the `pg_query_analyser` repository
+    3. run `qmake` and `make` in the cloned directory
+    4. download the generated binary into
+       `pg_query_analyser_<os_version>_<architecture>`
+    5. remove the packages from step 1 only if they were installed by this step
+    6. remove the temporary directory which was created by the `git clone`
+    '''
     installed_git = install('git')
     installed_libqt = install('libqt4-dev')
     installed_qmake = install('qt4-qmake')
-    dir = 'pg_query_analyser_fab_build'
-    api.run('git clone https://github.com/WoLpH/pg_query_analyser.git %s' % dir)
+    dir_ = 'pg_query_analyser_fab_build'
+    api.run('git clone https://github.com/WoLpH/pg_query_analyser.git %s' % dir_)
 
-    with api.cd(dir):
+    with api.cd(dir_):
         api.run('qmake')
         api.run('make')
 
@@ -241,10 +333,17 @@ def build():
     if autoremove:
         api.sudo('apt-get autoremove -y')
 
-    api.run('rm -rf %s' % dir)
+    api.run('rm -rf %s' % dir_)
 
 @api.task
 def log_and_analyse():
+    '''Do a full log and analyse cycle
+    
+    1. `enable_logging`
+    2. `wait`
+    3. `analyse`
+    4. `disable_logging`
+    '''
     enable_logging()
     try:
         wait()
@@ -253,4 +352,8 @@ def log_and_analyse():
             analyse()
         finally:
             disable_logging()
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
 
