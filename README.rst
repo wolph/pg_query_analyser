@@ -10,6 +10,19 @@ pg_query_analyser is a C++ clone of the PgFouine log analyser.
 Processing logs with millions of lines only takes a few minutes with this
 parser while PgFouine chokes long before that.
 
+Example output
+--------------
+
+The normal overview:
+
+.. image:: http://wolph.github.com/pg_query_analyser/images/screenshot.png
+
+The overview with the examples expanded:
+
+.. image:: http://wolph.github.com/pg_query_analyser/images/screenshot1.png
+
+
+
 Install
 -------
 
