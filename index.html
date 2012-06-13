@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Pg query analyser by WoLpH</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/WoLpH/pg_query_analyser">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/WoLpH/pg_query_analyser/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/WoLpH/pg_query_analyser/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Pg query analyser</h1>
+          <p>A PostgreSQL query analyzer written in C++. Mimicks the output of PgFouine but _much_ faster.</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/WoLpH">WoLpH</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h1></h1>
+
+<h1>pg_query_analyser -- PostgreSQL Slow Query Log parser</h1>
+
+<h2>Overview</h2>
+
+<p>pg_query_analyser is a C++ clone of the PgFouine log analyser.</p>
+
+<p>Processing logs with millions of lines only takes a few minutes with this
+parser while PgFouine chokes long before that.</p>
+
+<h2>Install</h2>
+
+<p>::</p>
+
+<pre><code>qmake
+make
+make test
+sudo make install
+</code></pre>
+
+<h2>Usage</h2>
+
+<p>From stdin:</p>
+
+<p>::</p>
+
+<pre><code>cat /var/log/postgresql/postgresql.log | head -n 100000 | ./pg_query_analyser -i -
+</code></pre>
+
+<p>From file:</p>
+
+<p>::</p>
+
+<pre><code>./pg_query_analyser --input-file=/var/log/postgresql/postgresql.log
+</code></pre>
+
+<p>For a full build+analyze on Ubuntu:</p>
+
+<p>::</p>
+
+<pre><code>cd examples
+fab -H &lt;remote-ubuntu-postgres-server&gt; build log_and_analyse
+</code></pre>
+
+<h2>Help</h2>
+
+<p>::</p>
+
+<pre><code># ./pg_query_analyser -h
+Usage: ./pg_query_analyser [flags]
+Options: 
+  -h, --help=[false]
+  -u, --users=[]
+  -v, --verbose=[false]
+  -i, --input-file=[/var/log/postgresql/postgresql-9.1-main.log]
+  -d, --databases=[]
+  -t, --query-types=[SELECT,UPDATE,INSERT,DELETE]
+  -o, --output-file=[report.html]
+  --top=[20]
+</code></pre>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+    
+  </body>
+</html>
