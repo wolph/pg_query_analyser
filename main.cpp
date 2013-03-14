@@ -106,9 +106,11 @@ int main(int argc, char **argv){
     QString user;
     QString statement;
     uint duration;
+
     QFile input_file;
     ret = args.getFile(&input_file, "input-file", QIODevice::ReadOnly | QIODevice::Text);
     if(ret)return ret;
+
     QFile output_file;
     ret = args.getFile(&output_file, "output-file", QIODevice::WriteOnly | QIODevice::Text);
     if(ret)return ret;
@@ -252,3 +254,4 @@ int main(int argc, char **argv){
     }
     qout << "Wrote to file " << args.getString("output-file") << endl;
 }
+

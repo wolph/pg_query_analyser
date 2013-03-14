@@ -6,9 +6,9 @@ bool Args::parse(int argc, char **argv){
     QHash<QString, QString> args;
 
     /* to accept parameters like -f=spam-eggs */
-    QRegExp short_key_value_re("-([^=])=(.+)");
+    QRegExp short_key_value_re("-([^=-])=(.+)");
     /* to accept parameters like -f */
-    QRegExp short_key_re("-([^=]+)");
+    QRegExp short_key_re("-([^=-]+)");
     /* to accept parameters like --foo-bar=spam-eggs */
     QRegExp key_value_re("--([^=]+)=(.+)");
     /* to accept parameters like --foo-bar */
@@ -138,9 +138,10 @@ bool Args::getBool(QString key){
     return value(key).toBool();
 }
 
-int Args::getFile(QFile *file, QString key, QFlags<QIODevice::OpenModeFlag> flags){
-    QString filename = getString(key);
+int Args::getFile(QFile *file, QString key,
+        QFlags<QIODevice::OpenModeFlag> flags){
     QTextStream qerr(stderr, QIODevice::WriteOnly);
+    QString filename = getString(key);
 
     if(filename == "-"){
         if(flags & QIODevice::ReadOnly){
@@ -198,7 +199,8 @@ void Args::help(){
         if(i.value()->getRequired()){
             qerr << QString("%1=<%2>").arg("--" + i.key(), i.key().toUpper());
         }else{
-            qerr << QString("%1=[%2]").arg("--" + i.key(), arg.getDefault().toString());
+            qerr << QString("%1=[%2]").arg("--" + i.key(),
+                arg.getDefault().toString());
         }
 
         /* print the help */
@@ -208,3 +210,4 @@ void Args::help(){
         qerr << endl;
     }
 }
+

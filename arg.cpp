@@ -1,6 +1,7 @@
 #include "arg.h"
 
-Arg::Arg(const char *name, QVariant(*callback)(QString), const QVariant default_, const QString help){
+Arg::Arg(const char *name, QVariant(*callback)(QString),
+        const QVariant default_, const QString help){
     this->_name = name;
     this->setDefault(default_);
     this->setCallback(callback);
@@ -15,7 +16,9 @@ Arg::Arg(const char *name, QVariant(*callback)(QString), const QString help){
     this->setRequired(true);
 }
 
-Arg::Arg(const char *shortname, const char *name, QVariant(*callback)(QString), const QVariant default_, const QString help){
+Arg::Arg(const char *shortname, const char *name,
+        QVariant(*callback)(QString), const QVariant default_,
+        const QString help){
     this->_name = name;
     this->_shortname = shortname;
     this->setDefault(default_);
@@ -24,7 +27,8 @@ Arg::Arg(const char *shortname, const char *name, QVariant(*callback)(QString), 
     this->setRequired(false);
 }
 
-Arg::Arg(const char *shortname, const char *name, QVariant(*callback)(QString), const QString help){
+Arg::Arg(const char *shortname, const char *name,
+        QVariant(*callback)(QString), const QString help){
     this->_name = name;
     this->_shortname = shortname;
     this->setCallback(callback);
@@ -42,10 +46,7 @@ Arg::Arg(const Arg &arg) : QObject(){
 }
 
 QVariant Arg::writableFile(QString filename){
-    if(filename == "-" || QFileInfo(filename).isWritable()){
-        return QVariant(filename);
-    }
-    return QVariant();
+    return QVariant(filename);
 }
 
 QVariant Arg::readableFile(QString filename){
