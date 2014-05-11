@@ -22,6 +22,15 @@ The overview with the examples expanded:
 .. image:: http://wolph.github.com/pg_query_analyser/images/screenshot1.png
 
 
+Requirements
+------------
+
+Ubuntu (tested with 13.10):
+
+::
+
+    apt-get install qt4-dev-tools
+
 
 Install
 -------
