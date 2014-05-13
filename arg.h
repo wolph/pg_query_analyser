@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QVariant>
-#include <QBool>
 #include <QString>
 #include <QFileInfo>
 

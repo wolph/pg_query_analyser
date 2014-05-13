@@ -36,10 +36,10 @@ uint Query::getAverageDuration(){
 
 QRegExp filter_digits("([^_a-zA-Z0-9])\\d+");
 QRegExp filter_limit("LIMIT \\d+", Qt::CaseInsensitive);
-QRegExp filter_operator("\\s*(!=|>=|<=|!=|<|>|=)\\s*(\\d+|E?'[^']*')");
+QRegExp filter_operator("(!=|>=|<=|!=|<|>|=)\\s*(\\d+|E?'[^']*')");
 QRegExp filter_in(" (in|IN)\\s+\\([^\\)]+\\)");
-QRegExp newline_match("\\s+(FROM|WHERE|LIMIT|GROUP BY|ORDER BY|LEFT JOIN|RIGHT JOIN|LEFT OUTER JOIN|RIGHT OUTER JOIN|JOIN)");
-QRegExp tabnewline_match("\\s+(AND|OR)");
+QRegExp newline_match("(FROM|WHERE|LIMIT|GROUP BY|ORDER BY|LEFT JOIN|RIGHT JOIN|LEFT OUTER JOIN|RIGHT OUTER JOIN|JOIN)");
+QRegExp tabnewline_match("(AND|OR)");
 
 #include <QTextStream>
 QTextStream out(stdout, QIODevice::WriteOnly);
@@ -63,7 +63,25 @@ QString Query::normalize(QString statement){
 
     statement = statement.replace(filter_limit, "LIMIT N");
     statement = statement.replace(filter_operator, " \\1 N");
-    statement = statement.replace(filter_digits, "\\1N");
+
+    // A not completely identical version of the filter_digit replace, but 
+    // quite a bit faster
+    //statement = statement.replace(filter_digits, "\\1N");
+    start_index = -1;
+    int i = 0;
+    while(i < statement.size()){
+        if('0' >= statement[i] && '9' <= statement[i]){
+            if(start_index == -1){
+                start_index = i;
+            }
+        }else if(start_index != -1){
+            statement = statement.replace(start_index, i - start_index, "N");
+            i -= start_index;
+            start_index = -1;
+        }
+        i++;
+    }
+
     statement = format(statement);
     return statement;
 }
