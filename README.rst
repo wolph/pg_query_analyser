@@ -22,6 +22,15 @@ The overview with the examples expanded:
 .. image:: http://wolph.github.com/pg_query_analyser/images/screenshot1.png
 
 
+Requirements
+------------
+
+Ubuntu (tested with 13.10):
+
+::
+
+    apt-get install qt4-dev-tools
+
 
 Install
 -------
@@ -35,6 +44,15 @@ Install
 
 Usage
 -----
+
+Set Postgres to use this `log_line_prefix`:
+
+::
+
+    log_line_prefix = '%t [%p]: [%l-1] host=%h,user=%u,db=%d,tx=%x,vtx=%v '
+
+
+After that we can start parsing data.
 
 From stdin:
 
