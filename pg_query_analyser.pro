@@ -22,11 +22,11 @@ SOURCES += main.cpp \
     args.cpp \
     queries.cpp
 HEADERS += \
-    query.h \
-    main.h \
-    args.h \
-    arg.h \
-    queries.h
+    query.hpp \
+    main.hpp \
+    args.hpp \
+    arg.hpp \
+    queries.hpp
 OTHER_FILES += templates/header.html \
     templates/footer.html
 

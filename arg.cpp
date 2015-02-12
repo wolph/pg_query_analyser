@@ -1,4 +1,4 @@
-#include "arg.h"
+#include "arg.hpp"
 
 Arg::Arg(const char *name, QVariant(*callback)(QString),
         const QVariant default_, const QString help){
