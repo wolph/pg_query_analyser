@@ -1,4 +1,4 @@
-#include "args.h"
+#include "args.hpp"
 
 bool Args::parse(int argc, char **argv){
     /* Simple class to parse some commandline arguments */

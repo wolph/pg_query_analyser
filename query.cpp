@@ -1,4 +1,4 @@
-#include "query.h"
+#include "query.hpp"
 
 Query::Query(QString normalized_statement, QString statement, QString user, QString database, uint duration)
 {

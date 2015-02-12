@@ -7,7 +7,7 @@
 #include <QStringList>
 #include <QTextStream>
 #include <QRegExp>
-#include "arg.h"
+#include "arg.hpp"
 
 class Args : public QHash<QString, QVariant>{
 private:

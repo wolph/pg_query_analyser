@@ -3,7 +3,7 @@
 
 #include <QHash>
 #include <QList>
-#include <query.h>
+#include <query.hpp>
 
 class Queries : public QHash<uint, Query*>
 {
