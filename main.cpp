@@ -52,7 +52,7 @@ QString print_queries(QList<Query*> queries, int top){
         for(int j=0; j<examples.count(); j++){
             output << QString("<div class=\"example%1 sql\">%2ms | <pre onclick=\"highlight(this);\">%3</pre></div>") \
                 .arg(j % 2) \
-                .arg(durations.at(j)) \
+                .arg(durations.at(j) / 1000) \
                 .arg(escape(examples.at(j)));
         }
 
