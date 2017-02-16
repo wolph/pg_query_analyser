@@ -32,6 +32,12 @@ Ubuntu (tested with 13.10):
     apt-get install qt4-dev-tools
 
 
+Ubuntu (tested with 16.04.2 LTS)
+
+::
+
+    apt-get install qt4-dev-tools qt4-qmake libqt4-dev
+
 Install
 -------
 
