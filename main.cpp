@@ -162,12 +162,13 @@ int main(int argc, char **argv){
         if(new_query_id != old_query_id || old_line_id < new_line_id){
             old_query_id = new_query_id;
             QString hashStatement = Query::normalize(statement);
+            QString upperStatement = hashStatement.toUpper();
             statement = Query::format(statement);
             if((
-                    hashStatement.startsWith("INSERT") ||
-                    hashStatement.startsWith("DELETE") ||
-                    hashStatement.startsWith("UPDATE") ||
-                    hashStatement.startsWith("SELECT")
+                    upperStatement.startsWith("INSERT") ||
+                    upperStatement.startsWith("DELETE") ||
+                    upperStatement.startsWith("UPDATE") ||
+                    upperStatement.startsWith("SELECT")
                 )
                     && (!users.length() || users.contains(user))
                     && (!databases.length() || databases.contains(database))){
@@ -254,4 +255,3 @@ int main(int argc, char **argv){
     }
     qout << "Wrote to file " << args.getString("output-file") << endl;
 }
-
